@@ -1,7 +1,7 @@
 pipeline {
     agent any
     stages {
-        stage('Send Test Email') {
+        stage('Send Test Emails') {
             steps {
                 echo 'Sending a test email to verify email configuration...'
                 emailext (
