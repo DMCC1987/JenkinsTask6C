@@ -52,26 +52,23 @@ pipeline {
         }
     }
     post {
-        success {
-            echo 'Pipeline succeeded!'
-            emailext (
-                to: 'darrenmccauley717@gmail.com',
-                subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: "The build was successful!\n\n" +
-                      "Check console output for more details: ${env.BUILD_URL}"
-            )
-        }
-        failure {
-            echo 'Pipeline failed!'
-            emailext (
-                to: 'darrenmccauley@gmail.com',
-                subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: "The build failed.\n\n" +
-                      "Check console output for more details: ${env.BUILD_URL}",
-                attachmentsPattern: '**/test-results/*.xml' // Attach test result files if needed.
-            )
-        }
+    success {
+        echo 'Pipeline succeeded!'
+        emailext (
+            to: 'darrenmccauley717@gmail.com',
+            subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+            body: "The build was successful!\n\n" +
+                  "Check console output for more details: ${env.BUILD_URL}"
+        )
+    }
+    failure {
+        echo 'Pipeline failed!'
+        emailext (
+            to: 'darrenmccauley@gmail.com',
+            subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+            body: "The build failed.\n\n" +
+                  "Check console output for more details: ${env.BUILD_URL}",
+            attachmentsPattern: '**/test-results/*.xml' // Attach test result files if needed.
+        )
     }
 }
-
-
