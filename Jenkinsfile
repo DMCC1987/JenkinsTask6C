@@ -1,7 +1,17 @@
 pipeline {
     agent any
     stages {
-        stage('Building') {
+        stage('Send Test Email') {
+            steps {
+                echo 'Sending a test email to verify email configuration...'
+                emailext (
+                    to: 'darrenmccauley717@gmail.com',
+                    subject: "Test Email",
+                    body: "This is a test email to verify email configuration."
+                )
+            }
+        }
+        stage('Build') {
             steps {
                 echo 'Stage 1: Building the code...'
                 // Tool: Maven
@@ -71,7 +81,7 @@ pipeline {
         success {
             echo 'Pipeline succeeded!'
             emailext (
-                to: "darrenmccauley717@gmail.com" ,
+                to: 'darrenmccauley717@gmail.com',
                 subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
                 body: "The build was successful!\n\n" +
                       "Check console output for more details: ${env.BUILD_URL}"
@@ -80,7 +90,7 @@ pipeline {
         failure {
             echo 'Pipeline failed!'
             emailext (
-                to: "darrenmccauley717@gmail.com",
+                to: 'darrenmccauley717@gmail.com',
                 subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
                 body: "The build failed.\n\n" +
                       "Check console output for more details: ${env.BUILD_URL}",
