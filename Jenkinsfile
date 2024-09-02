@@ -45,13 +45,32 @@ pipeline {
         }
     }
     post {
-        always {
+        success {
+            echo 'Pipeline succeeded!'
             script {
-                def logFile = "${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log"
-                def psScript = "C:\\path\\to\\send-email.ps1"
-                def command = "powershell -File ${psScript} -SmtpServer 'smtp.gmail.com' -SmtpPort 587 -SmtpFrom 'darrenmccauley717@gmail.com' -SmtpTo 'darrenmccauley717@gmail.com' -Subject 'Build Report: ${env.JOB_NAME} - ${env.BUILD_NUMBER}' -Body 'Build log attached.' -AttachmentPath '${logFile}' -SmtpUser 'darrenmccauley717@gmail.com' -SmtpPassword 'YOUR_APP_PASSWORD'"
-                
-                bat script: command
+                def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
+                def mailBody = """\
+                    The build was successful!
+
+                    Check console output for more details: ${env.BUILD_URL}
+                """
+                mail to: 'darrenmccauley717@gmail.com',
+                     subject: "Build Success: ${env.JOB_NAME}- ${env.BUILD_NUMBER}",
+                     body: mailBody
+            }
+        }
+        failure {
+            echo 'Pipeline failed!'
+            script {
+                def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
+                def mailBody = """\
+                    The build failed.
+
+                    Check console output for more details: ${env.BUILD_URL}
+                """
+                mail to: 'darrenmccauley717@gmail.com',
+                     subject: "Build Failure: ${env.JOB_NAME}- ${env.BUILD_NUMBER}",
+                     body: mailBody
             }
         }
     }
