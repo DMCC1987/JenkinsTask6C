@@ -49,28 +49,32 @@ pipeline {
             echo 'Pipeline succeeded!'
             script {
                 def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
-                def mailBody = """\
-                    The build was successful!
+                emailext (
+                    to: 'darrenmccauley717@gmail.com',
+                    subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                    body: """\
+                        The build was successful!
 
-                    Check console output for more details: ${env.BUILD_URL}
-                """
-                mail to: 'darrenmccauley717@gmail.com',
-                     subject: "Build Success: ${env.JOB_NAME}- ${env.BUILD_NUMBER}",
-                     body: mailBody
+                        Check console output for more details: ${env.BUILD_URL}
+                    """,
+                    attachLog: true
+                )
             }
         }
         failure {
             echo 'Pipeline failed!'
             script {
                 def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
-                def mailBody = """\
-                    The build failed.
+                emailext (
+                    to: 'darrenmccauley717@gmail.com',
+                    subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                    body: """\
+                        The build failed.
 
-                    Check console output for more details: ${env.BUILD_URL}
-                """
-                mail to: 'darrenmccauley717@gmail.com',
-                     subject: "Build Failure: ${env.JOB_NAME}- ${env.BUILD_NUMBER}",
-                     body: mailBody
+                        Check console output for more details: ${env.BUILD_URL}
+                    """,
+                    attachLog: true
+                )
             }
         }
     }
