@@ -1,26 +1,19 @@
 pipeline {
     agent any
-
     stages {
-        stage('Build') {
+        stage('Test Emailext') {
             steps {
-                echo 'Building...'
-                // Add a basic build step, like printing a message
+                script {
+                    emailext(
+                        to: 'your-email@example.com',  // Replace with your test email address
+                        subject: 'Test Email from Jenkins',
+                        body: 'This is a test email from Jenkins using emailext.',
+                        mimeType: 'text/plain'
+                    )
+                }
             }
         }
     }
-
-    post {
-        always {
-            // Email notification step
-            emailext(
-                to: 'darrenmccauley717@gmail.com',
-                subject: 'Jenkins Job: ${JOB_NAME} - Build #${BUILD_NUMBER} - ${BUILD_STATUS}',
-                body: "Check console output at ${BUILD_URL} to view the results."
-            )
-        }
-    }
 }
-
 
 
