@@ -7,7 +7,7 @@ pipeline {
                 // Example Maven build command
                 sh 'mvn clean package'
                 // Save build logs
-                sh 'echo "Build logs..." > build.log'
+                archiveArtifacts artifacts: 'build.log', allowEmptyArchive: true
             }
         }
         stage('Unit and Integration Tests') {
@@ -57,23 +57,24 @@ pipeline {
     post {
         always {
             script {
+                // Email notification for test and security scan stages
                 def emailSubject = "Build ${currentBuild.fullDisplayName} - ${currentBuild.currentResult}"
                 def emailBody = """\
                     Build Details:
                     - Build Number: ${currentBuild.number}
                     - Status: ${currentBuild.currentResult}
                     - URL: ${env.BUILD_URL}
-                    - Logs: ${env.BUILD_URL}console
                 """
-                // Archive logs to be attached
-                archiveArtifacts artifacts: 'build.log, integration-tests.log, security-scan-report.html', allowEmptyArchive: true
-
-                // Send email with attachments
+                
+                // Send email with attachments for test and security scan stages
                 emailext (
                     subject: emailSubject,
                     body: emailBody,
-                    attachmentsPattern: '**/*.log,**/*.html',  // Adjust the pattern to match your log files
-                    to: 'darrenmccauley717@gmail.com'
+                    attachmentsPattern: 'integration-tests.log, security-scan-report.html',
+                    to: 'darrenmccauley717@gmail.com',
+                    attachLog: true,  // Attach the full build log
+                    // You can include additional attachments patterns if needed
+                    // attachmentsPattern: 'integration-tests.log, security-scan-report.html'
                 )
             }
         }
