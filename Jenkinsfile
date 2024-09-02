@@ -4,50 +4,53 @@ pipeline {
         stage('Building') {
             steps {
                 echo 'Stage 1: Building the code...'
-                echo 'Using Maven to compile and package the code.'
-                // Add Maven build commands or steps here
+                // Example Maven build command
+                sh 'mvn clean package'
+                // Save build logs
+                sh 'echo "Build logs..." > build.log'
             }
         }
         stage('Unit and Integration Tests') {
             steps {
                 echo 'Stage 2: Running unit and integration tests...'
-                echo 'Using JUnit to run unit tests and pytest for integration tests.'
-                // Add test commands or steps here
+                // Example test commands
+                sh 'mvn test'
+                sh 'pytest > integration-tests.log'
             }
         }
         stage('Code Analysis') {
             steps {
                 echo 'Stage 3: Analyzing code for quality...'
-                echo 'Using SonarQube to analyze code quality and ensure industry standards.'
-                // Add SonarQube analysis commands or steps here
+                // Example code analysis command
+                sh 'mvn sonar:sonar'
             }
         }
         stage('Security Scan') {
             steps {
                 echo 'Stage 4: Performing security scan...'
-                echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
-                // Add OWASP ZAP scan commands or steps here
+                // Example security scan command
+                sh 'owasp-zap -t http://yourappurl -o security-scan-report.html'
             }
         }
         stage('Deploy to Staging') {
             steps {
                 echo 'Stage 5: Deploying to the staging environment...'
-                echo 'Using Ansible to deploy the application to a staging server.'
-                // Add Ansible deployment commands or steps here
+                // Example deployment command
+                sh 'ansible-playbook -i inventory/hosts deploy-staging.yml'
             }
         }
         stage('Integration Tests on Staging') {
             steps {
                 echo 'Stage 6: Running integration tests in staging...'
-                echo 'Using Selenium to run integration tests on the staging environment.'
-                // Add Selenium test commands or steps here
+                // Example integration tests command
+                sh 'selenium-server -jar selenium-server-standalone.jar'
             }
         }
         stage('Deploy to Production') {
             steps {
                 echo 'Stage 7: Deploying to the production environment...'
-                echo 'Using Docker to deploy the application to the production server.'
-                // Add Docker deployment commands or steps here
+                // Example production deployment command
+                sh 'docker-compose up -d'
             }
         }
     }
@@ -62,13 +65,19 @@ pipeline {
                     - URL: ${env.BUILD_URL}
                     - Logs: ${env.BUILD_URL}console
                 """
-                // Send email notification
-                mail to: 'darrenmccauley717@gmail.com',
-                     subject: emailSubject,
-                     body: emailBody,
-                     attachLog: false  // Attach Jenkins logs only
+                // Archive logs to be attached
+                archiveArtifacts artifacts: 'build.log, integration-tests.log, security-scan-report.html', allowEmptyArchive: true
+
+                // Send email with attachments
+                emailext (
+                    subject: emailSubject,
+                    body: emailBody,
+                    attachmentsPattern: '**/*.log,**/*.html',  // Adjust the pattern to match your log files
+                    to: 'darrenmccauley717@gmail.com'
+                )
             }
         }
     }
 }
+
 
