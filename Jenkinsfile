@@ -15,20 +15,27 @@ pipeline {
                     def logFilePath = "C:\\ProgramData\\Jenkins\\.jenkins\\jobs\\GJenkinsProject\\builds\\${buildNumber}\\log"
 
                     try {
-                        // Read the log file
-                        def logContent = readFile(logFilePath)
-                        
-                        // Save the log file as an attachment
-                        def logFile = new File("${buildNumber}_log.txt")
-                        logFile.write(logContent)
+                        // Check if the file exists
+                        if (fileExists(logFilePath)) {
+                            // Read the log file
+                            def logContent = readFile(logFilePath)
+                            
+                            // Save the log file as an artifact
+                            writeFile file: "build_${buildNumber}_log.txt", text: logContent
 
-                        // Send email with attachment
-                        mail(
-                            to: 'you@example.com',
-                            subject: "Build #${buildNumber} Log",
-                            body: "Please find the attached log file for build #${buildNumber}.",
-                            attachmentsPattern: "${buildNumber}_log.txt"
-                        )
+                            // Archive the log file as an artifact
+                            archiveArtifacts artifacts: "build_${buildNumber}_log.txt", onlyIfSuccessful: true
+
+                            // Send email with attachment
+                            mail(
+                                to: 'you@example.com',
+                                subject: "Build #${buildNumber} Log",
+                                body: "Please find the attached log file for build #${buildNumber}.",
+                                attachmentsPattern: "build_${buildNumber}_log.txt"
+                            )
+                        } else {
+                            echo "Log file does not exist at path: ${logFilePath}"
+                        }
                     } catch (Exception e) {
                         echo "Error reading or sending log file: ${e.message}"
                     }
