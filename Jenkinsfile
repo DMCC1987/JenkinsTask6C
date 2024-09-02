@@ -20,7 +20,7 @@ pipeline {
                             archiveArtifacts artifacts: "build_${buildNumber}_log.txt", onlyIfSuccessful: true
                             
                             emailext (
-                                to: 'you@example.com',
+                                to: 'darrenmccauley717@gmail.com',
                                 subject: "Build #${buildNumber} Log",
                                 body: "Please find the attached log file for build #${buildNumber}.",
                                 attachmentsPattern: "build_${buildNumber}_log.txt"
