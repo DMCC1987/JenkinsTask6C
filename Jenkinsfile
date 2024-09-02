@@ -51,33 +51,31 @@ pipeline {
                 def recipient = 'darrenmccauley717@gmail.com'
                 def subject = "Build ${currentBuild.result}: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
                 def body = "The build ${currentBuild.result.toLowerCase()}.\n\nCheck the attached log file for details.\n\n${env.BUILD_URL}"
-
-                // Send email with attachment using sendmail
-                sh """
-                echo "Subject: ${subject}" > /tmp/email.txt
-                echo "To: ${recipient}" >> /tmp/email.txt
-                echo "MIME-Version: 1.0" >> /tmp/email.txt
-                echo "Content-Type: multipart/mixed; boundary=\"=boundary=\" >> /tmp/email.txt
-                echo "" >> /tmp/email.txt
-                echo "--boundary" >> /tmp/email.txt
-                echo "Content-Type: text/plain; charset=\"utf-8\"" >> /tmp/email.txt
-                echo "" >> /tmp/email.txt
-                echo "${body}" >> /tmp/email.txt
-                echo "" >> /tmp/email.txt
-                echo "--boundary" >> /tmp/email.txt
-                echo "Content-Type: text/plain; name=\"log.txt\"" >> /tmp/email.txt
-                echo "Content-Transfer-Encoding: base64" >> /tmp/email.txt
-                echo "Content-Disposition: attachment; filename=\"log.txt\"" >> /tmp/email.txt
-                echo "" >> /tmp/email.txt
-                base64 ${logFile} >> /tmp/email.txt
-                echo "" >> /tmp/email.txt
-                echo "--boundary--" >> /tmp/email.txt
-                sendmail -vt < /tmp/email.txt
+                
+                bat """
+                powershell -Command \\
+                $smtpServer = "smtp.gmail.com"; \\
+                $smtpPort = 587; \\
+                $smtpFrom = "darrenmccauley717@gmail.com"; \\
+                $smtpTo = "${recipient}"; \\
+                $messageSubject = "${subject}"; \\
+                $messageBody = "${body}"; \\
+                $attachment = "${logFile}"; \\
+                $smtpUser = "darrenmccauley717@gmail.com"; \\
+                $smtpPassword = "YOUR_APP_PASSWORD"; \\
+                $smtp = New-Object Net.Mail.SmtpClient($smtpServer, $smtpPort); \\
+                $smtp.EnableSsl = $true; \\
+                $smtp.Credentials = New-Object System.Net.NetworkCredential($smtpUser, $smtpPassword); \\
+                $message = New-Object Net.Mail.MailMessage($smtpFrom, $smtpTo, $messageSubject, $messageBody); \\
+                $attachment = New-Object Net.Mail.Attachment($attachment); \\
+                $message.Attachments.Add($attachment); \\
+                $smtp.Send($message);
                 """
             }
         }
     }
 }
+
 
 
 
