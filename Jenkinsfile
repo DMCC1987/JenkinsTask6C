@@ -48,33 +48,15 @@ pipeline {
         always {
             script {
                 def logFile = "${JENKINS_HOME}/jobs/${JOB_NAME}/builds/${BUILD_NUMBER}/log"
-                def recipient = 'darrenmccauley717@gmail.com'
-                def subject = "Build ${currentBuild.result}: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
-                def body = "The build ${currentBuild.result.toLowerCase()}.\n\nCheck the attached log file for details.\n\n${env.BUILD_URL}"
+                def psScript = "C:\\path\\to\\send-email.ps1"
+                def command = "powershell -File ${psScript} -SmtpServer 'smtp.gmail.com' -SmtpPort 587 -SmtpFrom 'darrenmccauley717@gmail.com' -SmtpTo 'darrenmccauley717@gmail.com' -Subject 'Build Report: ${env.JOB_NAME} - ${env.BUILD_NUMBER}' -Body 'Build log attached.' -AttachmentPath '${logFile}' -SmtpUser 'darrenmccauley717@gmail.com' -SmtpPassword 'YOUR_APP_PASSWORD'"
                 
-                bat """
-                powershell -Command \\
-                $smtpServer = "smtp.gmail.com"; \\
-                $smtpPort = 587; \\
-                $smtpFrom = "darrenmccauley717@gmail.com"; \\
-                $smtpTo = "${recipient}"; \\
-                $messageSubject = "${subject}"; \\
-                $messageBody = "${body}"; \\
-                $attachment = "${logFile}"; \\
-                $smtpUser = "darrenmccauley717@gmail.com"; \\
-                $smtpPassword = "YOUR_APP_PASSWORD"; \\
-                $smtp = New-Object Net.Mail.SmtpClient($smtpServer, $smtpPort); \\
-                $smtp.EnableSsl = $true; \\
-                $smtp.Credentials = New-Object System.Net.NetworkCredential($smtpUser, $smtpPassword); \\
-                $message = New-Object Net.Mail.MailMessage($smtpFrom, $smtpTo, $messageSubject, $messageBody); \\
-                $attachment = New-Object Net.Mail.Attachment($attachment); \\
-                $message.Attachments.Add($attachment); \\
-                $smtp.Send($message);
-                """
+                bat script: command
             }
         }
     }
 }
+
 
 
 
