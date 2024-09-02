@@ -1,63 +1,42 @@
 pipeline {
     agent any
     stages {
-        stage('Building') {
+        stage('Build') {
             steps {
-                echo 'Stage 1: Building the code...'
-                echo 'Using Maven to compile and package the code.'
+                echo 'Building the project...'
+                // Simulate build step here
             }
         }
-        stage('Unit and Integration Tests') {
+        stage('Test') {
             steps {
-                echo 'Stage 2: Running unit and integration tests...'
-                echo 'Using JUnit to run unit tests and pytest for integration tests.'
-            }
-        }
-        stage('Code Analysis') {
-            steps {
-                echo 'Stage 3: Analyzing code for quality...'
-                echo 'Using SonarQube to analyze code quality and ensure industry standards.'
-            }
-        }
-        stage('Security Scan') {
-            steps {
-                echo 'Stage 4: Performing security scan...'
-                echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
-            }
-        }
-        stage('Deploy to Staging') {
-            steps {
-                echo 'Stage 5: Deploying to the staging environment...'
-                echo 'Using Ansible to deploy the application to a staging server.'
-            }
-        }
-        stage('Integration Tests on Staging') {
-            steps {
-                echo 'Stage 6: Running integration tests in staging...'
-                echo 'Using Selenium to run integration tests on the staging environment.'
-            }
-        }
-        stage('Deploy to Production') {
-            steps {
-                echo 'Stage 7: Deploying to the production environment...'
-                echo 'Using Docker to deploy the application to the production server.'
+                echo 'Running tests...'
+                // Simulate test step here
             }
         }
     }
     post {
         always {
             script {
-                def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
-                def logFile = new File(buildLog)
+                // Define the path to the build log file
+                def buildNumber = env.BUILD_NUMBER.toInteger()
+                def logFile = "${env.WORKSPACE}/../jobs/GJenkinsProject/builds/${buildNumber}/log"
                 
-                mail to: 'darrenmccauley717@gmail.com',
-                     subject: "Build Report: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                     body: "Build log attached.",
-                     attachmentsPattern: '**/builds/${env.BUILD_NUMBER}/log'
+                // Define the recipient email
+                def recipient = 'darrenmccauley717@gmail.com'
+                
+                // Read the log file content
+                def logContent = readFile(file: logFile)
+                
+                // Use the built-in mail step to send an email with the log file as an attachment
+                mail to: recipient,
+                     subject: "Build ${buildNumber} Log",
+                     body: "Please find the build log attached.",
+                     attachmentsPattern: logFile
             }
         }
     }
 }
+
 
 
 
