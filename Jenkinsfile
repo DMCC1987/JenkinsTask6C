@@ -45,36 +45,15 @@ pipeline {
         }
     }
     post {
-        success {
-            echo 'Pipeline succeeded!'
+        always {
             script {
                 def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
-                emailext (
-                    to: 'darrenmccauley717@gmail.com',
-                    subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                    body: """\
-                        The build was successful!
-
-                        Check console output for more details: ${env.BUILD_URL}
-                    """,
-                    attachLog: true
-                )
-            }
-        }
-        failure {
-            echo 'Pipeline failed!'
-            script {
-                def buildLog = "${env.WORKSPACE}/builds/${env.BUILD_NUMBER}/log"
-                emailext (
-                    to: 'darrenmccauley717@gmail.com',
-                    subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                    body: """\
-                        The build failed.
-
-                        Check console output for more details: ${env.BUILD_URL}
-                    """,
-                    attachLog: true
-                )
+                def logFile = new File(buildLog)
+                
+                mail to: 'darrenmccauley717@gmail.com',
+                     subject: "Build Report: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                     body: "Build log attached.",
+                     attachmentsPattern: '**/builds/${env.BUILD_NUMBER}/log'
             }
         }
     }
