@@ -12,7 +12,7 @@ pipeline {
             script {
                 // Simple test to send an email
                 emailext(
-                    to: 'youremail@example.com',
+                    to: 'darrenmccauley717@gmail.com',
                     subject: 'Jenkins Test Email',
                     body: 'This is a simple test email from Jenkins.'
                 )
