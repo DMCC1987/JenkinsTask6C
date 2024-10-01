@@ -48,46 +48,26 @@ pipeline {
         success {
             script {
                 echo 'Pipeline succeeded!'
-                def logFile = getLatestLogFile()
-                sendEmail("Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", logFile, true)
+                mail to: 'darrenmccauley717@gmail.com',
+                     subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                     body: """The build was successful! 
+
+Check console output for more details: ${env.BUILD_URL}"""
             }
         }
         failure {
             script {
                 echo 'Pipeline failed!'
-                def logFile = getLatestLogFile()
-                sendEmail("Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", logFile, false)
+                mail to: 'darrenmccauley717@gmail.com',
+                     subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                     body: """The build failed. 
+
+Check console output for more details: ${env.BUILD_URL}"""
             }
         }
     }
 }
 
-// Function to get the latest log file path
-def getLatestLogFile() {
-    def buildDir = "C:/ProgramData/Jenkins/.jenkins/jobs/GJenkinsProject/builds"
-    def buildNumber = currentBuild.number.toString()
-    def logFilePath = "${buildDir}/${buildNumber}/log"
-
-    if (fileExists(logFilePath)) {
-        return logFilePath
-    } else {
-        error("Log file not found: ${logFilePath}")
-    }
-}
-
-// Function to send email
-def sendEmail(String subject, String logFilePath, boolean success) {
-    // Use attachmentsPattern instead of attachments
-    emailext(
-        to: 'darrenmccauley717@gmail.com',
-        subject: subject,
-        body: """The build ${success ? 'was successful' : 'failed'}.
-
-Check console output for more details: ${env.BUILD_URL}""",
-        attachmentsPattern: logFilePath, // Change here
-        mimeType: 'text/plain'
-    )
-}
 
 
 
