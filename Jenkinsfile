@@ -30,17 +30,6 @@ pipeline {
                     writeFile(file: 'unit_integration_tests.csv', text: 'Column1,Column2\nValue1,Value2')
                 }
             }
-            post {
-                success {
-                    script {
-                        def logPath = "${env.WORKSPACE}/unit_integration_tests.log"
-                        echo "Log file path: ${logPath}"
-                        if (fileExists(logPath)) {
-                            echo "Log file exists: ${logPath}"
-                        }
-                    }
-                }
-            }
         }
 
         stage('Code Analysis') {
@@ -58,17 +47,6 @@ pipeline {
                 script {
                     // Log file creation for security scan results
                     writeFile(file: 'security_scan.log', text: 'Security scan results go here.')
-                }
-            }
-            post {
-                success {
-                    script {
-                        def logPath = "${env.WORKSPACE}/security_scan.log"
-                        echo "Log file path: ${logPath}"
-                        if (fileExists(logPath)) {
-                            echo "Log file exists: ${logPath}"
-                        }
-                    }
                 }
             }
         }
@@ -109,11 +87,9 @@ pipeline {
 
     post {
         success {
-            // Email notification on success
-            emailext (
-                to: 'darrenmccauley717@gmail.com', // Replace with your email address
-                subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: """
+            script {
+                def subject = "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
+                def body = """
                 The build was successful.
 
                 Check console output for more details: ${env.BUILD_URL}
@@ -122,28 +98,39 @@ pipeline {
                 - Security Scan: ${env.WORKSPACE}/security_scan.log
                 - Unit and Integration Tests (JSON): ${env.WORKSPACE}/unit_integration_tests.json
                 - Unit and Integration Tests (CSV): ${env.WORKSPACE}/unit_integration_tests.csv
-                """,
-                attachLog: true, // Attach the build log
-                attachmentsPattern: "*.log,*.json,*.csv" // Attach log files of different types
-            )
+                """
+                
+                // Send email using the mail command
+                sh """
+                echo "$body" | mail -s "$subject" -A "${env.WORKSPACE}/unit_integration_tests.log" \
+                -A "${env.WORKSPACE}/unit_integration_tests.json" \
+                -A "${env.WORKSPACE}/unit_integration_tests.csv" \
+                -A "${env.WORKSPACE}/security_scan.log" \
+                darrenmccauley717@gmail.com
+                """
+            }
         }
         failure {
-            // Email notification on failure
-            emailext (
-                to: 'darrenmccauley717@gmail.com', // Replace with your email address
-                subject: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: """
+            script {
+                def subject = "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}"
+                def body = """
                 The build has failed.
 
                 Check console output for more details: ${env.BUILD_URL}
                 Log files:
                 - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
                 - Security Scan: ${env.WORKSPACE}/security_scan.log
-                """,
-                attachLog: true,
-                attachmentsPattern: "*.log,*.json,*.csv" // Attach log files of different types
-            )
+                """
+                
+                // Send email using the mail command
+                sh """
+                echo "$body" | mail -s "$subject" -A "${env.WORKSPACE}/unit_integration_tests.log" \
+                -A "${env.WORKSPACE}/security_scan.log" \
+                darrenmccauley717@gmail.com
+                """
+            }
         }
     }
 }
+
 
