@@ -104,17 +104,18 @@ def sendEmail(String subject, String logFilePath, boolean success) {
         echo "Log file does not exist: ${logFilePath}"
     }
 
-    // Send email with attachment
+    // Send email with attachment using GLOB pattern
     emailext(
         to: 'darrenmccauley717@gmail.com',
         subject: subject,
         body: """The build ${success ? 'was successful' : 'failed'}. 
 
 Check console output for more details: ${env.BUILD_URL}""",
-        attachmentsPattern: logFilePath,
+        attachmentsPattern: '**/builds/${currentBuild.number}/log',  // Use GLOB pattern here
         mimeType: 'text/plain'
     )
 }
+
 
 
 
