@@ -79,30 +79,44 @@ pipeline {
     post {
         success {
             script {
-                sendEmail("Build Successful: ${env.JOB_NAME} - ${currentBuild.number}", "The build was successful.")
+                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
+                sendGenericEmail("Build Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
             }
         }
         failure {
             script {
-                sendEmail("Build Failed: ${env.JOB_NAME} - ${currentBuild.number}", "The build has failed.")
+                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
+                sendGenericEmail("Build Failure: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
             }
         }
     }
 }
 
-// Function to send email
-def sendEmail(String subject, String body) {
-    echo "Sending email with subject: ${subject} and body: ${body}"
+// Function to send generic email
+def sendGenericEmail(String subject, String logFilePath, boolean success) {
+    echo "Log file path: ${logFilePath}"
+    if (fileExists(logFilePath)) {
+        echo "Log file exists: ${logFilePath}"
+    } else {
+        echo "Log file does not exist: ${logFilePath}"
+    }
 
-    // Send a generic email without attachments using the built-in mail step
+    // Log the subject and body before sending
+    String emailSubject = subject
+    String emailBody = """The build ${success ? 'was successful' : 'failed'}. 
+
+Check console output for more details: ${env.BUILD_URL}"""
+
+    echo "Subject: ${emailSubject}"
+    echo "Body: ${emailBody}"
+
+    // Send generic email without attachments
     mail(
         to: 'darrenmccauley717@gmail.com',
-        subject: subject,
-        body: body
+        subject: emailSubject,
+        body: emailBody
     )
 }
-
-
 
 
 
