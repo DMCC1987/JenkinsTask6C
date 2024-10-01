@@ -18,9 +18,25 @@ pipeline {
 
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Stage 2: Running unit and integration tests...'
-                echo 'Using JUnit to run unit tests and pytest for integration tests.'
-                // Add your test commands here
+                script {
+                    echo 'Stage 2: Running unit and integration tests...'
+                    echo 'Using JUnit to run unit tests and pytest for integration tests.'
+                    // Add your test commands here
+                }
+            }
+            post {
+                success {
+                    script {
+                        def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/unit_integration_tests.log"
+                        sendNotificationEmail("Unit and Integration Tests Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
+                    }
+                }
+                failure {
+                    script {
+                        def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/unit_integration_tests.log"
+                        sendNotificationEmail("Unit and Integration Tests Failed: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
+                    }
+                }
             }
         }
 
@@ -34,9 +50,25 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                echo 'Stage 4: Performing security scan...'
-                echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
-                // Add your security scan command here
+                script {
+                    echo 'Stage 4: Performing security scan...'
+                    echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
+                    // Add your security scan command here
+                }
+            }
+            post {
+                success {
+                    script {
+                        def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/security_scan.log"
+                        sendNotificationEmail("Security Scan Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
+                    }
+                }
+                failure {
+                    script {
+                        def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/security_scan.log"
+                        sendNotificationEmail("Security Scan Failed: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
+                    }
+                }
             }
         }
 
@@ -92,6 +124,33 @@ pipeline {
     }
 }
 
+// Function to send notification email with log attachment
+def sendNotificationEmail(String subject, String logFilePath, boolean success) {
+    echo "Log file path: ${logFilePath}"
+    if (fileExists(logFilePath)) {
+        echo "Log file exists: ${logFilePath}"
+    } else {
+        echo "Log file does not exist: ${logFilePath}"
+    }
+
+    // Log the subject and body before sending
+    String emailSubject = subject
+    String emailBody = """The build stage ${success ? 'succeeded' : 'failed'}. 
+
+Check console output for more details: ${env.BUILD_URL}"""
+
+    echo "Subject: ${emailSubject}"
+    echo "Body: ${emailBody}"
+
+    // Send email with attachment
+    mail(
+        to: 'darrenmccauley717@gmail.com',
+        subject: emailSubject,
+        body: emailBody,
+        attachments: logFilePath // Attach the log file
+    )
+}
+
 // Function to send generic email
 def sendGenericEmail(String subject, String logFilePath, boolean success) {
     echo "Log file path: ${logFilePath}"
@@ -117,6 +176,7 @@ Check console output for more details: ${env.BUILD_URL}"""
         body: emailBody
     )
 }
+
 
 
 
