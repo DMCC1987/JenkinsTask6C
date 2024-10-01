@@ -51,11 +51,15 @@ pipeline {
                 // Finding the most recent log file dynamically
                 def logFile = findLogFile()
                 // Sending email on success
-                mail to: 'darrenmccauley717@gmail.com',
+                emailext(
+                    to: 'darrenmccauley717@gmail.com',
                     subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                    body: "The build was successful!\n\n" +
-                          "Check console output for more details: ${env.BUILD_URL}",
-                    attachmentsPattern: logFile
+                    body: """The build was successful!
+
+Check console output for more details: ${env.BUILD_URL}""",
+                    attachmentsPattern: logFile,
+                    mimeType: 'text/plain'
+                )
             }
         }
         failure {
@@ -64,11 +68,15 @@ pipeline {
                 // Finding the most recent log file dynamically
                 def logFile = findLogFile()
                 // Sending email on failure
-                mail to: 'darrenmccauley717@gmail.com',
+                emailext(
+                    to: 'darrenmccauley717@gmail.com',
                     subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                    body: "The build failed.\n\n" +
-                          "Check console output for more details: ${env.BUILD_URL}",
-                    attachmentsPattern: logFile
+                    body: """The build failed.
+
+Check console output for more details: ${env.BUILD_URL}""",
+                    attachmentsPattern: logFile,
+                    mimeType: 'text/plain'
+                )
             }
         }
     }
@@ -80,6 +88,7 @@ def findLogFile() {
     def buildNumber = currentBuild.number.toString()
     return "${buildDir}/${buildNumber}/log"
 }
+
 
 
 
