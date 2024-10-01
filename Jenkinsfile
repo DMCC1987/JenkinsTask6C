@@ -44,11 +44,8 @@ pipeline {
                         Unit and Integration Tests have completed successfully.
 
                         Check console output for more details: ${env.BUILD_URL}
-
-                        Log files:
-                        Unit and Integration Tests Log:
-                        ${readFile('unit_integration_tests.log')}
-                        """
+                        """,
+                        attachments: ['unit_integration_tests.log'] // Attach the log file
                     )
                 }
                 failure {
@@ -60,11 +57,8 @@ pipeline {
                         Unit and Integration Tests have failed.
 
                         Check console output for more details: ${env.BUILD_URL}
-
-                        Log files:
-                        Unit and Integration Tests Log:
-                        ${readFile('unit_integration_tests.log')}
-                        """
+                        """,
+                        attachments: ['unit_integration_tests.log'] // Attach the log file
                     )
                 }
             }
@@ -83,7 +77,7 @@ pipeline {
                 echo 'Stage 4: Performing security scan...'
                 echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
                 script {
-                    // Create a placeholder log file for the security scan
+                    // Log file creation for security scan results
                     writeFile(file: 'security_scan.log', text: 'Security scan not performed. Please implement the security check for actual results.')
                 }
             }
@@ -104,14 +98,23 @@ pipeline {
                         Security Scan has completed successfully.
 
                         Check console output for more details: ${env.BUILD_URL}
-
-                        Log files:
-                        Security Scan Log:
-                        ${readFile('security_scan.log')}
-                        """
+                        """,
+                        attachments: ['security_scan.log'] // Attach the log file
                     )
                 }
-                // Removed empty failure block here
+                failure {
+                    // Send email notification on security scan failure
+                    mail (
+                        to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                        subject: "Security Scan Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                        body: """
+                        Security Scan has failed.
+
+                        Check console output for more details: ${env.BUILD_URL}
+                        """,
+                        attachments: ['security_scan.log'] // Attach the log file
+                    )
+                }
             }
         }
 
@@ -158,7 +161,6 @@ pipeline {
         }
     }
 }
-
 
 
 
