@@ -65,7 +65,7 @@ pipeline {
                 }
 
                 // Send email with log information
-                mail to: 'recipient@example.com',
+                mail to: 'darrenmccauley717@gmail.com',
                      subject: "Build Logs for Job: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                      body: """
                      <p>Please find the log information below:</p>
