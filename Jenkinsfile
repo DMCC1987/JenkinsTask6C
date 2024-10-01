@@ -24,7 +24,7 @@ pipeline {
                 // Add your test commands here
                 script {
                     // Log file creation for test results
-                    writeFile(file: 'unit_integration_tests.log', text: 'Test results go here.')
+                    writeFile(file: 'unit_integration_tests.log', text: 'Unit and Integration Test results go here.')
                 }
             }
             post {
@@ -107,34 +107,40 @@ pipeline {
     post {
         success {
             // Email notification on success
-            emailext (
+            mail (
                 to: 'darrenmccauley717@gmail.com', // Replace with your email address
                 subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
                 body: """
                 The build was successful.
 
                 Check console output for more details: ${env.BUILD_URL}
+
                 Log files:
-                - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
-                - Security Scan: ${env.WORKSPACE}/security_scan.log
-                """,
-                attachLog: true // Attach the build log
+                Unit and Integration Tests Log:
+                ${readFile('unit_integration_tests.log')}
+
+                Security Scan Log:
+                ${readFile('security_scan.log')}
+                """
             )
         }
         failure {
             // Email notification on failure
-            emailext (
+            mail (
                 to: 'darrenmccauley717@gmail.com', // Replace with your email address
                 subject: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
                 body: """
                 The build has failed.
 
                 Check console output for more details: ${env.BUILD_URL}
+
                 Log files:
-                - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
-                - Security Scan: ${env.WORKSPACE}/security_scan.log
-                """,
-                attachLog: true
+                Unit and Integration Tests Log:
+                ${readFile('unit_integration_tests.log')}
+
+                Security Scan Log:
+                ${readFile('security_scan.log')}
+                """
             )
         }
     }
