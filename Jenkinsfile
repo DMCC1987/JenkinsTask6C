@@ -79,46 +79,30 @@ pipeline {
     post {
         success {
             script {
-                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
-                sendEmail("Build Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
+                sendEmail("Build Successful: ${env.JOB_NAME} - ${currentBuild.number}", "The build was successful.")
             }
         }
         failure {
             script {
-                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
-                sendEmail("Build Failure: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
+                sendEmail("Build Failed: ${env.JOB_NAME} - ${currentBuild.number}", "The build has failed.")
             }
         }
     }
 }
 
 // Function to send email
-def sendEmail(String subject, String logFilePath, boolean success) {
-    echo "Log file path: ${logFilePath}"
-    if (fileExists(logFilePath)) {
-        echo "Log file exists: ${logFilePath}"
-    } else {
-        echo "Log file does not exist: ${logFilePath}"
-    }
+def sendEmail(String subject, String body) {
+    echo "Sending email with subject: ${subject} and body: ${body}"
 
-    // Log the subject and body before sending
-    String emailSubject = subject
-    String emailBody = """The build ${success ? 'was successful' : 'failed'}. 
-
-Check console output for more details: ${env.BUILD_URL}"""
-
-    echo "Subject: ${emailSubject}"
-    echo "Body: ${emailBody}"
-
-    // Send email with attachment
+    // Send generic email without attachments
     emailext(
         to: 'darrenmccauley717@gmail.com',
-        subject: emailSubject,
-        body: emailBody,
-        attachmentsPattern: "builds/${currentBuild.number}/log", // Adjusted to the correct path
+        subject: subject,
+        body: body,
         mimeType: 'text/plain'
     )
 }
+
 
 
 
