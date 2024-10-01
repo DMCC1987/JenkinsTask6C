@@ -36,6 +36,36 @@ pipeline {
                             echo "Log file exists: ${logPath}"
                         }
                     }
+                    // Send email notification after unit and integration tests
+                    mail (
+                        to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                        subject: "Unit and Integration Tests Successful: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                        body: """
+                        Unit and Integration Tests have completed successfully.
+
+                        Check console output for more details: ${env.BUILD_URL}
+
+                        Log files:
+                        Unit and Integration Tests Log:
+                        ${readFile('unit_integration_tests.log')}
+                        """
+                    )
+                }
+                failure {
+                    // Send email notification on test failure
+                    mail (
+                        to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                        subject: "Unit and Integration Tests Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                        body: """
+                        Unit and Integration Tests have failed.
+
+                        Check console output for more details: ${env.BUILD_URL}
+
+                        Log files:
+                        Unit and Integration Tests Log:
+                        ${readFile('unit_integration_tests.log')}
+                        """
+                    )
                 }
             }
         }
@@ -66,6 +96,36 @@ pipeline {
                             echo "Log file exists: ${logPath}"
                         }
                     }
+                    // Send email notification after security scan
+                    mail (
+                        to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                        subject: "Security Scan Successful: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                        body: """
+                        Security Scan has completed successfully.
+
+                        Check console output for more details: ${env.BUILD_URL}
+
+                        Log files:
+                        Security Scan Log:
+                        ${readFile('security_scan.log')}
+                        """
+                    )
+                }
+                failure {
+                    // Send email notification on security scan failure
+                    mail (
+                        to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                        subject: "Security Scan Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                        body: """
+                        Security Scan has failed.
+
+                        Check console output for more details: ${env.BUILD_URL}
+
+                        Log files:
+                        Security Scan Log:
+                        ${readFile('security_scan.log')}
+                        """
+                    )
                 }
             }
         }
@@ -106,45 +166,14 @@ pipeline {
 
     post {
         success {
-            // Email notification on success
-            mail (
-                to: 'darrenmccauley717@gmail.com', // Replace with your email address
-                subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: """
-                The build was successful.
-
-                Check console output for more details: ${env.BUILD_URL}
-
-                Log files:
-                Unit and Integration Tests Log:
-                ${readFile('unit_integration_tests.log')}
-
-                Security Scan Log:
-                ${readFile('security_scan.log')}
-                """
-            )
+            echo 'Build completed successfully.'
         }
         failure {
-            // Email notification on failure
-            mail (
-                to: 'darrenmccauley717@gmail.com', // Replace with your email address
-                subject: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                body: """
-                The build has failed.
-
-                Check console output for more details: ${env.BUILD_URL}
-
-                Log files:
-                Unit and Integration Tests Log:
-                ${readFile('unit_integration_tests.log')}
-
-                Security Scan Log:
-                ${readFile('security_scan.log')}
-                """
-            )
+            echo 'Build failed.'
         }
     }
 }
+
 
 
 
