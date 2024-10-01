@@ -111,9 +111,7 @@ pipeline {
                         """
                     )
                 }
-                failure {
-                    // Optional: Handle failure if needed
-                }
+                // Removed empty failure block here
             }
         }
 
@@ -160,7 +158,6 @@ pipeline {
         }
     }
 }
-
 
 
 
