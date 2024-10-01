@@ -83,7 +83,7 @@ pipeline {
                 echo 'Stage 4: Performing security scan...'
                 echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
                 script {
-                    // Log file creation for security scan results
+                    // Create a placeholder log file
                     writeFile(file: 'security_scan.log', text: 'Security scan results go here.')
                 }
             }
@@ -173,6 +173,8 @@ pipeline {
         }
     }
 }
+
+
 
 
 
