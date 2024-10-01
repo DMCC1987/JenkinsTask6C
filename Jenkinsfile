@@ -57,7 +57,7 @@ pipeline {
                     body: """The build was successful!
 
 Check console output for more details: ${env.BUILD_URL}""",
-                    attachmentsPattern: logFile,
+                    attachmentsPattern: "${logFile}",
                     mimeType: 'text/plain'
                 )
             }
@@ -74,7 +74,7 @@ Check console output for more details: ${env.BUILD_URL}""",
                     body: """The build failed.
 
 Check console output for more details: ${env.BUILD_URL}""",
-                    attachmentsPattern: logFile,
+                    attachmentsPattern: "${logFile}",
                     mimeType: 'text/plain'
                 )
             }
@@ -86,8 +86,9 @@ Check console output for more details: ${env.BUILD_URL}""",
 def findLogFile() {
     def buildDir = "C:/ProgramData/Jenkins/.jenkins/jobs/GJenkinsProject/builds"
     def buildNumber = currentBuild.number.toString()
-    return "${buildDir}/${buildNumber}/log"
+    return "${buildDir}/${buildNumber}/log"  // This returns the specific log file path
 }
+
 
 
 
