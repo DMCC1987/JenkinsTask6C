@@ -12,18 +12,6 @@ pipeline {
                 echo 'Stage 2: Running unit and integration tests...'
                 echo 'Using JUnit to run unit tests and pytest for integration tests.'
             }
-            post {
-                success {
-                    script {
-                        sendEmail("Unit and Integration Tests Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", true)
-                    }
-                }
-                failure {
-                    script {
-                        sendEmail("Unit and Integration Tests Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", false)
-                    }
-                }
-            }
         }
         stage('Code Analysis') {
             steps {
@@ -35,18 +23,6 @@ pipeline {
             steps {
                 echo 'Stage 4: Performing security scan...'
                 echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
-            }
-            post {
-                success {
-                    script {
-                        sendEmail("Security Scan Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", true)
-                    }
-                }
-                failure {
-                    script {
-                        sendEmail("Security Scan Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", false)
-                    }
-                }
             }
         }
         stage('Deploy to Staging') {
@@ -67,22 +43,41 @@ pipeline {
                 echo 'Using Docker to deploy the application to the production server.'
             }
         }
+        stage('Debug Info') {
+            steps {
+                script {
+                    echo "Current Build Number: ${currentBuild.number}"
+                    echo "Build Workspace: ${env.WORKSPACE}"
+                    echo "Job Name: ${env.JOB_NAME}"
+                    echo "Build URL: ${env.BUILD_URL}"
+                }
+            }
+        }
     }
-}
-
-// Function to send email
-def sendEmail(String subject, boolean success) {
-    // Assuming logs are stored in a specific directory based on the current build number
-    def logFile = getLatestLogFile()
-    emailext(
-        to: 'darrenmccauley717@gmail.com',
-        subject: subject,
-        body: """The build ${success ? 'was successful' : 'failed'}.
-
-Check console output for more details: ${env.BUILD_URL}""",
-        attachmentsPattern: logFile,
-        mimeType: 'text/plain'
-    )
+    post {
+        success {
+            script {
+                echo 'Pipeline succeeded!'
+                def logFile = getLatestLogFile()
+                try {
+                    sendEmail("Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", logFile, true)
+                } catch (Exception e) {
+                    echo "Failed to send email: ${e.message}"
+                }
+            }
+        }
+        failure {
+            script {
+                echo 'Pipeline failed!'
+                def logFile = getLatestLogFile()
+                try {
+                    sendEmail("Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", logFile, false)
+                } catch (Exception e) {
+                    echo "Failed to send email: ${e.message}"
+                }
+            }
+        }
+    }
 }
 
 // Function to get the latest log file path
@@ -92,11 +87,35 @@ def getLatestLogFile() {
     def logFilePath = "${buildDir}/${buildNumber}/log"
 
     if (fileExists(logFilePath)) {
+        echo "Log file found: ${logFilePath}"
         return logFilePath
     } else {
+        echo "Log file not found: ${logFilePath}"
         error("Log file not found: ${logFilePath}")
     }
 }
+
+// Function to send email
+def sendEmail(String subject, String logFilePath, boolean success) {
+    echo "Log file path: ${logFilePath}"
+    if (fileExists(logFilePath)) {
+        echo "Log file exists: ${logFilePath}"
+    } else {
+        echo "Log file does not exist: ${logFilePath}"
+    }
+
+    // Send email with attachment
+    emailext(
+        to: 'darrenmccauley717@gmail.com',
+        subject: subject,
+        body: """The build ${success ? 'was successful' : 'failed'}. 
+
+Check console output for more details: ${env.BUILD_URL}""",
+        attachmentsPattern: logFilePath,
+        mimeType: 'text/plain'
+    )
+}
+
 
 
 
