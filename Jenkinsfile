@@ -94,12 +94,11 @@ pipeline {
 def sendEmail(String subject, String body) {
     echo "Sending email with subject: ${subject} and body: ${body}"
 
-    // Send generic email without attachments
-    emailext(
+    // Send a generic email without attachments using the built-in mail step
+    mail(
         to: 'darrenmccauley717@gmail.com',
         subject: subject,
-        body: body,
-        mimeType: 'text/plain'
+        body: body
     )
 }
 
