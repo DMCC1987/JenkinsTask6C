@@ -49,7 +49,7 @@ pipeline {
             script {
                 echo 'Pipeline succeeded!'
                 // Finding the most recent log file dynamically
-                def logFile = findLogFile()
+                def logFilePattern = findLogFile()
                 // Sending email on success
                 emailext(
                     to: 'darrenmccauley717@gmail.com',
@@ -57,7 +57,7 @@ pipeline {
                     body: """The build was successful!
 
 Check console output for more details: ${env.BUILD_URL}""",
-                    attachmentsPattern: "${logFile}",
+                    attachmentsPattern: logFilePattern,
                     mimeType: 'text/plain'
                 )
             }
@@ -66,7 +66,7 @@ Check console output for more details: ${env.BUILD_URL}""",
             script {
                 echo 'Pipeline failed!'
                 // Finding the most recent log file dynamically
-                def logFile = findLogFile()
+                def logFilePattern = findLogFile()
                 // Sending email on failure
                 emailext(
                     to: 'darrenmccauley717@gmail.com',
@@ -74,7 +74,7 @@ Check console output for more details: ${env.BUILD_URL}""",
                     body: """The build failed.
 
 Check console output for more details: ${env.BUILD_URL}""",
-                    attachmentsPattern: "${logFile}",
+                    attachmentsPattern: logFilePattern,
                     mimeType: 'text/plain'
                 )
             }
@@ -86,8 +86,9 @@ Check console output for more details: ${env.BUILD_URL}""",
 def findLogFile() {
     def buildDir = "C:/ProgramData/Jenkins/.jenkins/jobs/GJenkinsProject/builds"
     def buildNumber = currentBuild.number.toString()
-    return "${buildDir}/${buildNumber}/log"  // This returns the specific log file path
+    return "${buildDir}/${buildNumber}/log"  // Ant-style glob pattern
 }
+
 
 
 
