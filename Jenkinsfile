@@ -31,24 +31,6 @@ pipeline {
                 // Your security scan commands here (e.g., OWASP ZAP)
             }
         }
-        stage('Deploy to Staging') {
-            steps {
-                echo 'Deploying to the staging environment...'
-                // Your deployment commands here (e.g., Ansible)
-            }
-        }
-        stage('Integration Tests on Staging') {
-            steps {
-                echo 'Running integration tests in staging...'
-                // Your integration test commands here (e.g., Selenium)
-            }
-        }
-        stage('Deploy to Production') {
-            steps {
-                echo 'Deploying to the production environment...'
-                // Your production deployment commands here (e.g., Docker)
-            }
-        }
     }
     
     post {
@@ -64,8 +46,8 @@ pipeline {
                     logContent += readFile(file) + "\n\n"
                 }
 
-                // Send email with log information
-                mail to: 'darrenmccauley717@gmail.com',
+                // Send email with log information after tests and security scan
+                mail to: 'recipient@example.com',
                      subject: "Build Logs for Job: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                      body: """
                      <p>Please find the log information below:</p>
