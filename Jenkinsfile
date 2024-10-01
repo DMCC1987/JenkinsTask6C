@@ -4,6 +4,7 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
+                // Checkout the code from the SCM repository
                 checkout scm
             }
         }
@@ -12,30 +13,28 @@ pipeline {
             steps {
                 echo 'Stage 1: Building the code...'
                 echo 'Using Maven to compile and package the code.'
-                // Add your Maven build command here
+                // Add your Maven build commands here
             }
         }
 
         stage('Unit and Integration Tests') {
             steps {
+                echo 'Stage 2: Running unit and integration tests...'
+                echo 'Using JUnit to run unit tests and pytest for integration tests.'
+                // Add your test commands here
                 script {
-                    echo 'Stage 2: Running unit and integration tests...'
-                    echo 'Using JUnit to run unit tests and pytest for integration tests.'
-                    // Simulate log creation for testing
-                    writeFile(file: "unit_integration_tests.log", text: "Unit and Integration Tests log content")
+                    // Log file creation for test results
+                    writeFile(file: 'unit_integration_tests.log', text: 'Test results go here.')
                 }
             }
             post {
                 success {
                     script {
-                        def logFilePath = "${env.WORKSPACE}/unit_integration_tests.log"
-                        sendNotificationEmail("Unit and Integration Tests Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
-                    }
-                }
-                failure {
-                    script {
-                        def logFilePath = "${env.WORKSPACE}/unit_integration_tests.log"
-                        sendNotificationEmail("Unit and Integration Tests Failed: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
+                        def logPath = "${env.WORKSPACE}/unit_integration_tests.log"
+                        echo "Log file path: ${logPath}"
+                        if (fileExists(logPath)) {
+                            echo "Log file exists: ${logPath}"
+                        }
                     }
                 }
             }
@@ -45,30 +44,27 @@ pipeline {
             steps {
                 echo 'Stage 3: Analyzing code for quality...'
                 echo 'Using SonarQube to analyze code quality and ensure industry standards.'
-                // Add your SonarQube command here
+                // Add your SonarQube commands here
             }
         }
 
         stage('Security Scan') {
             steps {
+                echo 'Stage 4: Performing security scan...'
+                echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
                 script {
-                    echo 'Stage 4: Performing security scan...'
-                    echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
-                    // Simulate log creation for testing
-                    writeFile(file: "security_scan.log", text: "Security Scan log content")
+                    // Log file creation for security scan results
+                    writeFile(file: 'security_scan.log', text: 'Security scan results go here.')
                 }
             }
             post {
                 success {
                     script {
-                        def logFilePath = "${env.WORKSPACE}/security_scan.log"
-                        sendNotificationEmail("Security Scan Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
-                    }
-                }
-                failure {
-                    script {
-                        def logFilePath = "${env.WORKSPACE}/security_scan.log"
-                        sendNotificationEmail("Security Scan Failed: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
+                        def logPath = "${env.WORKSPACE}/security_scan.log"
+                        echo "Log file path: ${logPath}"
+                        if (fileExists(logPath)) {
+                            echo "Log file exists: ${logPath}"
+                        }
                     }
                 }
             }
@@ -78,7 +74,7 @@ pipeline {
             steps {
                 echo 'Stage 5: Deploying to the staging environment...'
                 echo 'Using Ansible to deploy the application to a staging server.'
-                // Add your deployment command here
+                // Add your Ansible deployment commands here
             }
         }
 
@@ -86,7 +82,7 @@ pipeline {
             steps {
                 echo 'Stage 6: Running integration tests in staging...'
                 echo 'Using Selenium to run integration tests on the staging environment.'
-                // Add your integration test command here
+                // Add your Selenium test commands here
             }
         }
 
@@ -94,90 +90,42 @@ pipeline {
             steps {
                 echo 'Stage 7: Deploying to the production environment...'
                 echo 'Using Docker to deploy the application to the production server.'
-                // Add your production deployment command here
+                // Add your Docker deployment commands here
             }
         }
 
         stage('Debug Info') {
             steps {
-                script {
-                    echo "Current Build Number: ${currentBuild.number}"
-                    echo "Build Workspace: ${env.WORKSPACE}"
-                    echo "Job Name: ${env.JOB_NAME}"
-                    echo "Build URL: ${env.BUILD_URL}"
-                }
+                echo "Current Build Number: ${env.BUILD_NUMBER}"
+                echo "Build Workspace: ${env.WORKSPACE}"
+                echo "Job Name: ${env.JOB_NAME}"
+                echo "Build URL: ${env.BUILD_URL}"
             }
         }
     }
 
     post {
         success {
-            script {
-                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
-                sendGenericEmail("Build Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
-            }
+            // Email notification on success
+            emailext (
+                to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "The build was successful.\n\nCheck console output for more details: ${env.BUILD_URL}",
+                attachLog: true, // Attach the build log
+                attachments: "${env.WORKSPACE}/unit_integration_tests.log, ${env.WORKSPACE}/security_scan.log" // Attach additional logs
+            )
         }
         failure {
-            script {
-                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
-                sendGenericEmail("Build Failure: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
-            }
+            // Email notification on failure
+            emailext (
+                to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                subject: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: "The build has failed.\n\nCheck console output for more details: ${env.BUILD_URL}",
+                attachLog: true
+            )
         }
     }
 }
-
-// Function to send notification email with log attachment
-def sendNotificationEmail(String subject, String logFilePath, boolean success) {
-    echo "Log file path: ${logFilePath}"
-    if (fileExists(logFilePath)) {
-        echo "Log file exists: ${logFilePath}"
-    } else {
-        echo "Log file does not exist: ${logFilePath}"
-    }
-
-    // Log the subject and body before sending
-    String emailSubject = subject
-    String emailBody = """The build stage ${success ? 'succeeded' : 'failed'}. 
-
-Check console output for more details: ${env.BUILD_URL}"""
-
-    echo "Subject: ${emailSubject}"
-    echo "Body: ${emailBody}"
-
-    // Send email with attachment
-    mail(
-        to: 'darrenmccauley717@gmail.com',
-        subject: emailSubject,
-        body: emailBody,
-        attachments: logFilePath // Attach the log file
-    )
-}
-
-// Function to send generic email
-def sendGenericEmail(String subject, String logFilePath, boolean success) {
-    echo "Log file path: ${logFilePath}"
-    if (fileExists(logFilePath)) {
-        echo "Log file exists: ${logFilePath}"
-    } else {
-        echo "Log file does not exist: ${logFilePath}"
-    }
-
-    // Log the subject and body before sending
-    String emailSubject = subject
-    String emailBody = """The build ${success ? 'was successful' : 'failed'}. 
-
-Check console output for more details: ${env.BUILD_URL}"""
-
-    echo "Subject: ${emailSubject}"
-    echo "Body: ${emailBody}"
-
-    // Send generic email without attachments
-    mail(
-        to: 'darrenmccauley717@gmail.com',
-        subject: emailSubject,
-        body: emailBody
-    )
-} 
 
 
 
