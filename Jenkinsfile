@@ -77,16 +77,18 @@ def getLatestLogFile() {
 
 // Function to send email
 def sendEmail(String subject, String logFilePath, boolean success) {
+    // Use attachmentsPattern instead of attachments
     emailext(
         to: 'darrenmccauley717@gmail.com',
         subject: subject,
         body: """The build ${success ? 'was successful' : 'failed'}.
 
 Check console output for more details: ${env.BUILD_URL}""",
-        attachments: logFilePath,
+        attachmentsPattern: logFilePath, // Change here
         mimeType: 'text/plain'
     )
 }
+
 
 
 
