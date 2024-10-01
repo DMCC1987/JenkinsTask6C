@@ -44,8 +44,11 @@ pipeline {
                         Unit and Integration Tests have completed successfully.
 
                         Check console output for more details: ${env.BUILD_URL}
-                        """,
-                        attachments: ['unit_integration_tests.log'] // Attach the log file
+
+                        Log files:
+                        Unit and Integration Tests Log:
+                        ${readFile('unit_integration_tests.log')}
+                        """
                     )
                 }
                 failure {
@@ -57,8 +60,11 @@ pipeline {
                         Unit and Integration Tests have failed.
 
                         Check console output for more details: ${env.BUILD_URL}
-                        """,
-                        attachments: ['unit_integration_tests.log'] // Attach the log file
+
+                        Log files:
+                        Unit and Integration Tests Log:
+                        ${readFile('unit_integration_tests.log')}
+                        """
                     )
                 }
             }
@@ -78,7 +84,7 @@ pipeline {
                 echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
                 script {
                     // Log file creation for security scan results
-                    writeFile(file: 'security_scan.log', text: 'Security scan not performed. Please implement the security check for actual results.')
+                    writeFile(file: 'security_scan.log', text: 'Security scan results go here.')
                 }
             }
             post {
@@ -98,8 +104,11 @@ pipeline {
                         Security Scan has completed successfully.
 
                         Check console output for more details: ${env.BUILD_URL}
-                        """,
-                        attachments: ['security_scan.log'] // Attach the log file
+
+                        Log files:
+                        Security Scan Log:
+                        ${readFile('security_scan.log')}
+                        """
                     )
                 }
                 failure {
@@ -111,8 +120,11 @@ pipeline {
                         Security Scan has failed.
 
                         Check console output for more details: ${env.BUILD_URL}
-                        """,
-                        attachments: ['security_scan.log'] // Attach the log file
+
+                        Log files:
+                        Security Scan Log:
+                        ${readFile('security_scan.log')}
+                        """
                     )
                 }
             }
