@@ -12,6 +12,18 @@ pipeline {
                 echo 'Stage 2: Running unit and integration tests...'
                 echo 'Using JUnit to run unit tests and pytest for integration tests.'
             }
+            post {
+                success {
+                    script {
+                        sendEmail("Unit and Integration Tests Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", true)
+                    }
+                }
+                failure {
+                    script {
+                        sendEmail("Unit and Integration Tests Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", false)
+                    }
+                }
+            }
         }
         stage('Code Analysis') {
             steps {
@@ -23,6 +35,18 @@ pipeline {
             steps {
                 echo 'Stage 4: Performing security scan...'
                 echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
+            }
+            post {
+                success {
+                    script {
+                        sendEmail("Security Scan Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", true)
+                    }
+                }
+                failure {
+                    script {
+                        sendEmail("Security Scan Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", false)
+                    }
+                }
             }
         }
         stage('Deploy to Staging') {
@@ -44,30 +68,35 @@ pipeline {
             }
         }
     }
-    post {
-        success {
-            script {
-                echo 'Pipeline succeeded!'
-                mail to: 'darrenmccauley717@gmail.com',
-                     subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                     body: """The build was successful! 
-
-Check console output for more details: ${env.BUILD_URL}"""
-            }
-        }
-        failure {
-            script {
-                echo 'Pipeline failed!'
-                mail to: 'darrenmccauley717@gmail.com',
-                     subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                     body: """The build failed. 
-
-Check console output for more details: ${env.BUILD_URL}"""
-            }
-        }
-    }
 }
 
+// Function to send email
+def sendEmail(String subject, boolean success) {
+    // Assuming logs are stored in a specific directory based on the current build number
+    def logFile = getLatestLogFile()
+    emailext(
+        to: 'darrenmccauley717@gmail.com',
+        subject: subject,
+        body: """The build ${success ? 'was successful' : 'failed'}.
+
+Check console output for more details: ${env.BUILD_URL}""",
+        attachmentsPattern: logFile,
+        mimeType: 'text/plain'
+    )
+}
+
+// Function to get the latest log file path
+def getLatestLogFile() {
+    def buildDir = "C:/ProgramData/Jenkins/.jenkins/jobs/GJenkinsProject/builds"
+    def buildNumber = currentBuild.number.toString()
+    def logFilePath = "${buildDir}/${buildNumber}/log"
+
+    if (fileExists(logFilePath)) {
+        return logFilePath
+    } else {
+        error("Log file not found: ${logFilePath}")
+    }
+}
 
 
 
