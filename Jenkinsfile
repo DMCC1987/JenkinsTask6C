@@ -48,51 +48,45 @@ pipeline {
         success {
             script {
                 echo 'Pipeline succeeded!'
-                // Finding the most recent log file dynamically
-                def logFilePattern = findLogFile()
-                // Sending email on success
-                emailext(
-                    to: 'darrenmccauley717@gmail.com',
-                    subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                    body: """The build was successful!
-
-Check console output for more details: ${env.BUILD_URL}""",
-                    attachmentsPattern: logFilePattern,
-                    mimeType: 'text/plain'
-                )
+                def logFile = getLatestLogFile()
+                sendEmail("Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", logFile, true)
             }
         }
         failure {
             script {
                 echo 'Pipeline failed!'
-                // Finding the most recent log file dynamically
-                def logFilePattern = findLogFile()
-                // Sending email on failure
-                emailext(
-                    to: 'darrenmccauley717@gmail.com',
-                    subject: "Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
-                    body: """The build failed.
-
-Check console output for more details: ${env.BUILD_URL}""",
-                    attachmentsPattern: logFilePattern,
-                    mimeType: 'text/plain'
-                )
+                def logFile = getLatestLogFile()
+                sendEmail("Build Failure: ${env.JOB_NAME} - ${env.BUILD_NUMBER}", logFile, false)
             }
         }
     }
 }
 
-// Function to find the most recent log file dynamically
-def findLogFile() {
+// Function to get the latest log file path
+def getLatestLogFile() {
     def buildDir = "C:/ProgramData/Jenkins/.jenkins/jobs/GJenkinsProject/builds"
     def buildNumber = currentBuild.number.toString()
-    return "${buildDir}/${buildNumber}/log"  // Ant-style glob pattern
+    def logFilePath = "${buildDir}/${buildNumber}/log"
+
+    if (fileExists(logFilePath)) {
+        return logFilePath
+    } else {
+        error("Log file not found: ${logFilePath}")
+    }
 }
 
+// Function to send email
+def sendEmail(String subject, String logFilePath, boolean success) {
+    emailext(
+        to: 'darrenmccauley717@gmail.com',
+        subject: subject,
+        body: """The build ${success ? 'was successful' : 'failed'}.
 
-
-
-
+Check console output for more details: ${env.BUILD_URL}""",
+        attachments: logFilePath,
+        mimeType: 'text/plain'
+    )
+}
 
 
 
