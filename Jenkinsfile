@@ -18,19 +18,24 @@ pipeline {
 
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Stage 2: Running unit and integration tests...'
-                echo 'Using JUnit to run unit tests and pytest for integration tests.'
-                // Add your test commands here
+                script {
+                    echo 'Stage 2: Running unit and integration tests...'
+                    echo 'Using JUnit to run unit tests and pytest for integration tests.'
+                    // Simulate log creation for testing
+                    writeFile(file: "unit_integration_tests.log", text: "Unit and Integration Tests log content")
+                }
             }
             post {
                 success {
                     script {
-                        sendNotificationEmail("Unit and Integration Tests Success: ${env.JOB_NAME} - ${currentBuild.number}", true)
+                        def logFilePath = "${env.WORKSPACE}/unit_integration_tests.log"
+                        sendNotificationEmail("Unit and Integration Tests Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
                     }
                 }
                 failure {
                     script {
-                        sendNotificationEmail("Unit and Integration Tests Failed: ${env.JOB_NAME} - ${currentBuild.number}", false)
+                        def logFilePath = "${env.WORKSPACE}/unit_integration_tests.log"
+                        sendNotificationEmail("Unit and Integration Tests Failed: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
                     }
                 }
             }
@@ -46,19 +51,24 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                echo 'Stage 4: Performing security scan...'
-                echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
-                // Add your security scan command here
+                script {
+                    echo 'Stage 4: Performing security scan...'
+                    echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
+                    // Simulate log creation for testing
+                    writeFile(file: "security_scan.log", text: "Security Scan log content")
+                }
             }
             post {
                 success {
                     script {
-                        sendNotificationEmail("Security Scan Success: ${env.JOB_NAME} - ${currentBuild.number}", true)
+                        def logFilePath = "${env.WORKSPACE}/security_scan.log"
+                        sendNotificationEmail("Security Scan Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
                     }
                 }
                 failure {
                     script {
-                        sendNotificationEmail("Security Scan Failed: ${env.JOB_NAME} - ${currentBuild.number}", false)
+                        def logFilePath = "${env.WORKSPACE}/security_scan.log"
+                        sendNotificationEmail("Security Scan Failed: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
                     }
                 }
             }
@@ -103,50 +113,71 @@ pipeline {
     post {
         success {
             script {
-                echo "Pipeline completed successfully."
+                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
+                sendGenericEmail("Build Success: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, true)
             }
         }
         failure {
             script {
-                echo "Pipeline failed."
+                def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log"
+                sendGenericEmail("Build Failure: ${env.JOB_NAME} - ${currentBuild.number}", logFilePath, false)
             }
         }
     }
 }
 
 // Function to send notification email with log attachment
-def sendNotificationEmail(String subject, boolean success) {
-    // Define log file path
-    def logFilePath = "${env.WORKSPACE}/builds/${currentBuild.number}/log" // Update this path as needed
+def sendNotificationEmail(String subject, String logFilePath, boolean success) {
+    echo "Log file path: ${logFilePath}"
+    if (fileExists(logFilePath)) {
+        echo "Log file exists: ${logFilePath}"
+    } else {
+        echo "Log file does not exist: ${logFilePath}"
+    }
 
+    // Log the subject and body before sending
     String emailSubject = subject
-    String emailBody = """The stage ${success ? 'was successful' : 'failed'}. 
+    String emailBody = """The build stage ${success ? 'succeeded' : 'failed'}. 
 
 Check console output for more details: ${env.BUILD_URL}"""
 
-    // Log email details before sending
     echo "Subject: ${emailSubject}"
     echo "Body: ${emailBody}"
 
-    // Check if log file exists
-    if (fileExists(logFilePath)) {
-        echo "Log file exists: ${logFilePath}"
-        
-        // Send email with attachment (implementation not executed)
-        mail to: 'recipient@example.com',
-             subject: emailSubject,
-             body: emailBody,
-             attachments: [logFilePath] // This line would send the attachment
-    } else {
-        echo "Log file does not exist: ${logFilePath}"
-        
-        // Send email without attachment
-        mail to: 'recipient@example.com',
-             subject: emailSubject,
-             body: emailBody
-    }
+    // Send email with attachment
+    mail(
+        to: 'darrenmccauley717@gmail.com',
+        subject: emailSubject,
+        body: emailBody,
+        attachments: logFilePath // Attach the log file
+    )
 }
 
+// Function to send generic email
+def sendGenericEmail(String subject, String logFilePath, boolean success) {
+    echo "Log file path: ${logFilePath}"
+    if (fileExists(logFilePath)) {
+        echo "Log file exists: ${logFilePath}"
+    } else {
+        echo "Log file does not exist: ${logFilePath}"
+    }
+
+    // Log the subject and body before sending
+    String emailSubject = subject
+    String emailBody = """The build ${success ? 'was successful' : 'failed'}. 
+
+Check console output for more details: ${env.BUILD_URL}"""
+
+    echo "Subject: ${emailSubject}"
+    echo "Body: ${emailBody}"
+
+    // Send generic email without attachments
+    mail(
+        to: 'darrenmccauley717@gmail.com',
+        subject: emailSubject,
+        body: emailBody
+    )
+} 
 
 
 
