@@ -25,6 +25,9 @@ pipeline {
                 script {
                     // Log file creation for test results
                     writeFile(file: 'unit_integration_tests.log', text: 'Test results go here.')
+                    // Create additional file types
+                    writeFile(file: 'unit_integration_tests.json', text: '{"test": "data"}')
+                    writeFile(file: 'unit_integration_tests.csv', text: 'Column1,Column2\nValue1,Value2')
                 }
             }
             post {
@@ -117,8 +120,11 @@ pipeline {
                 Log files:
                 - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
                 - Security Scan: ${env.WORKSPACE}/security_scan.log
+                - Unit and Integration Tests (JSON): ${env.WORKSPACE}/unit_integration_tests.json
+                - Unit and Integration Tests (CSV): ${env.WORKSPACE}/unit_integration_tests.csv
                 """,
-                attachLog: true // Attach the build log
+                attachLog: true, // Attach the build log
+                attachmentsPattern: "*.log,*.json,*.csv" // Attach log files of different types
             )
         }
         failure {
@@ -134,15 +140,10 @@ pipeline {
                 - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
                 - Security Scan: ${env.WORKSPACE}/security_scan.log
                 """,
-                attachLog: true
+                attachLog: true,
+                attachmentsPattern: "*.log,*.json,*.csv" // Attach log files of different types
             )
         }
     }
 }
-
-
-
-
-
-
 
