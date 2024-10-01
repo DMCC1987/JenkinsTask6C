@@ -4,59 +4,141 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
+                // Checkout the code from the SCM repository
                 checkout scm
             }
         }
-        stage('Build') {
+
+        stage('Building') {
             steps {
-                echo 'Building the code...'
-                // Your build commands here (e.g., Maven, Gradle, etc.)
+                echo 'Stage 1: Building the code...'
+                echo 'Using Maven to compile and package the code.'
+                // Add your Maven build commands here
             }
         }
-        stage('Run Tests') {
+
+        stage('Unit and Integration Tests') {
             steps {
-                echo 'Running unit and integration tests...'
-                // Your test commands here
+                echo 'Stage 2: Running unit and integration tests...'
+                echo 'Using JUnit to run unit tests and pytest for integration tests.'
+                // Add your test commands here
+                script {
+                    // Log file creation for test results
+                    writeFile(file: 'unit_integration_tests.log', text: 'Test results go here.')
+                }
+            }
+            post {
+                success {
+                    script {
+                        def logPath = "${env.WORKSPACE}/unit_integration_tests.log"
+                        echo "Log file path: ${logPath}"
+                        if (fileExists(logPath)) {
+                            echo "Log file exists: ${logPath}"
+                        }
+                    }
+                }
             }
         }
+
         stage('Code Analysis') {
             steps {
-                echo 'Analyzing code for quality...'
-                // Your code analysis commands here (e.g., SonarQube)
+                echo 'Stage 3: Analyzing code for quality...'
+                echo 'Using SonarQube to analyze code quality and ensure industry standards.'
+                // Add your SonarQube commands here
             }
         }
+
         stage('Security Scan') {
             steps {
-                echo 'Performing security scan...'
-                // Your security scan commands here (e.g., OWASP ZAP)
+                echo 'Stage 4: Performing security scan...'
+                echo 'Using OWASP ZAP to identify security vulnerabilities in the code.'
+                script {
+                    // Log file creation for security scan results
+                    writeFile(file: 'security_scan.log', text: 'Security scan results go here.')
+                }
+            }
+            post {
+                success {
+                    script {
+                        def logPath = "${env.WORKSPACE}/security_scan.log"
+                        echo "Log file path: ${logPath}"
+                        if (fileExists(logPath)) {
+                            echo "Log file exists: ${logPath}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Stage 5: Deploying to the staging environment...'
+                echo 'Using Ansible to deploy the application to a staging server.'
+                // Add your Ansible deployment commands here
+            }
+        }
+
+        stage('Integration Tests on Staging') {
+            steps {
+                echo 'Stage 6: Running integration tests in staging...'
+                echo 'Using Selenium to run integration tests on the staging environment.'
+                // Add your Selenium test commands here
+            }
+        }
+
+        stage('Deploy to Production') {
+            steps {
+                echo 'Stage 7: Deploying to the production environment...'
+                echo 'Using Docker to deploy the application to the production server.'
+                // Add your Docker deployment commands here
+            }
+        }
+
+        stage('Debug Info') {
+            steps {
+                echo "Current Build Number: ${env.BUILD_NUMBER}"
+                echo "Build Workspace: ${env.WORKSPACE}"
+                echo "Job Name: ${env.JOB_NAME}"
+                echo "Build URL: ${env.BUILD_URL}"
             }
         }
     }
-    
-    post {
-        always {
-            script {
-                // Retrieve log files from the workspace
-                def logFiles = findFiles(glob: '*.log') // Adjust the pattern if necessary
-                def logContent = ''
-                
-                // Read each log file and append its content
-                for (file in logFiles) {
-                    logContent += "Log File: ${file}\n"
-                    logContent += readFile(file) + "\n\n"
-                }
 
-                // Send email with log information after tests and security scan
-                mail to: 'recipient@example.com',
-                     subject: "Build Logs for Job: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                     body: """
-                     <p>Please find the log information below:</p>
-                     <pre>${logContent}</pre>
-                     """,
-                     mimeType: 'text/html'
-            }
+    post {
+        success {
+            // Email notification on success
+            emailext (
+                to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                subject: "Build Success: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: """
+                The build was successful.
+
+                Check console output for more details: ${env.BUILD_URL}
+                Log files:
+                - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
+                - Security Scan: ${env.WORKSPACE}/security_scan.log
+                """,
+                attachLog: true // Attach the build log
+            )
+        }
+        failure {
+            // Email notification on failure
+            emailext (
+                to: 'darrenmccauley717@gmail.com', // Replace with your email address
+                subject: "Build Failed: ${env.JOB_NAME} - ${env.BUILD_NUMBER}",
+                body: """
+                The build has failed.
+
+                Check console output for more details: ${env.BUILD_URL}
+                Log files:
+                - Unit and Integration Tests: ${env.WORKSPACE}/unit_integration_tests.log
+                - Security Scan: ${env.WORKSPACE}/security_scan.log
+                """,
+                attachLog: true
+            )
         }
     }
 }
+
 
 
