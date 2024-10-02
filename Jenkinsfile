@@ -13,7 +13,6 @@ pipeline {
             steps {
                 echo 'Stage 1: Building the code...'
                 echo 'Using Maven to compile and package the code.'
-                // Add your Maven build commands here
             }
         }
 
